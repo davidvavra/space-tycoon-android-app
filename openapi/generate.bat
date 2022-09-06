@@ -1,0 +1,1 @@
+openapi-generator-cli generate -i openapi.yaml -g kotlin -o space-tycoon-api -c kotlin-codegen-config.yaml

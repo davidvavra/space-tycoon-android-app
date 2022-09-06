@@ -1,0 +1,8 @@
+additionalProperties:
+  artifactId: space-tycoon-api
+  groupId: vavra.me
+  library: jvm-retrofit2
+  enumPropertyNaming: UPPERCASE
+  moshiCodeGen: true
+  packageName: vavra.me.generated
+  useCoroutines: true
