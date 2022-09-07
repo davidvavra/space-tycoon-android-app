@@ -37,9 +37,9 @@ class MainViewModel(val app: Application) : AndroidViewModel(app) {
 
     fun refresh() {
         viewModelScope.launch {
-           // if (playerId == null) {
+            if (playerId == null) {
                 login()
-          //  }
+            }
             val data = api.dataGet().body()
             if (data?.ships != null) {
                 val players = data.players
