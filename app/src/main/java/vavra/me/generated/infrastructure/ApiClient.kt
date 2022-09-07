@@ -10,6 +10,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import vavra.me.generated.auth.ApiKeyAuth
+import vavra.me.spacetycooncommand.Environment
 
 
 class ApiClient(
@@ -107,12 +108,10 @@ class ApiClient(
     }
 
     companion object {
-        @JvmStatic
-        protected val baseUrlKey = "vavra.me.generated.baseUrl"
 
         @JvmStatic
         val defaultBasePath: String by lazy {
-            System.getProperties().getProperty(baseUrlKey, "https://space-tycoon.garage-trip.cz")
+            Environment.baseUrl
         }
     }
 }

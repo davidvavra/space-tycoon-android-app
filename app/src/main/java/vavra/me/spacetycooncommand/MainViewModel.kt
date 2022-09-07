@@ -71,7 +71,7 @@ class MainViewModel(val app: Application) : AndroidViewModel(app) {
     }
 
     private suspend fun login() {
-        val response = api.loginPost(Credentials("spaceinvaders", "artemis"))
+        val response = api.loginPost(Credentials(Environment.username, Environment.password))
         if (response.isSuccessful) {
             playerId = response.body()?.id
             val cookie = response.headers()["set-cookie"]!!.split("=")[1]
