@@ -1,17 +1,21 @@
 package vavra.me.spacetycooncommand
 
+import android.app.Application
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import vavra.me.generated.apis.GameApi
 import vavra.me.generated.infrastructure.ApiClient
+import vavra.me.generated.models.Command
 import vavra.me.generated.models.Credentials
+import vavra.me.generated.models.Ship
 
-class MainViewModel : ViewModel() {
+class MainViewModel(val app: Application) : AndroidViewModel(app) {
     var state by mutableStateOf(
         State(
             listOf(),
@@ -23,6 +27,7 @@ class MainViewModel : ViewModel() {
         private set
     private val api = ApiClient().createService(GameApi::class.java)
     private var playerId: String? = null
+    private var ships: Map<String, Ship> = mapOf()
 
 
     init {
@@ -37,22 +42,18 @@ class MainViewModel : ViewModel() {
             val data = api.dataGet().body()
             if (data?.ships != null) {
                 val players = data.players
+                ships = data.ships
                 val filteredShips =
-                    data.ships.entries.filter {
-                        (it.value.shipClass == SHIP_TYPE_BOMBER ||
-                                it.value.shipClass == SHIP_TYPE_FIGHTER ||
-                                it.value.shipClass == SHIP_TYPE_MOTHERSHIP)
+                    ships.entries.filter {
+                        (it.value.shipClass == SHIP_CLASS_BOMBER ||
+                                it.value.shipClass == SHIP_CLASS_FIGHTER ||
+                                it.value.shipClass == SHIP_CLASS_MOTHERSHIP)
                                 && it.value.player != playerId
                     }
                 val targets = filteredShips.map {
                     val playerName = players[it.value.player]?.name
-                    val type = when (it.value.shipClass) {
-                        SHIP_TYPE_FIGHTER -> "fighter"
-                        SHIP_TYPE_MOTHERSHIP -> "mother"
-                        SHIP_TYPE_BOMBER -> "bomber"
-                        else -> "?"
-                    }
-                    val name = "$playerName - $type (${it.value.name})"
+                    val shipClassName = shipClassName(it.value.shipClass)
+                    val name = "$playerName - $shipClassName (${it.value.name})"
                     Target(it.key, name)
                 }
                 state = State(
@@ -69,9 +70,9 @@ class MainViewModel : ViewModel() {
     }
 
     private suspend fun login() {
-        val response = api.loginPost(Credentials("spaceinvaders", "artemis"))
-        playerId = response.body()?.id
-        Log.i("TYCOON", "Player ID=$playerId")
+        val response = api.loginPost(Credentials("spaceinvaders", "artemis")).body()
+        playerId = response?.id
+        alert("Welcome player id '${playerId}'")
     }
 
     fun motherSelected(target: Target) {
@@ -86,9 +87,52 @@ class MainViewModel : ViewModel() {
         state = state.copy(bombersSelection = target)
     }
 
+    fun motherAttack() {
+        attack(SHIP_CLASS_MOTHERSHIP, state.mothershipSelection)
+    }
+
+    fun fighterAttack() {
+        attack(SHIP_CLASS_FIGHTER, state.fightersSelection)
+    }
+
+    fun bomberAttack() {
+        attack(SHIP_CLASS_BOMBER, state.bombersSelection)
+    }
+
+    private fun attack(shipClass: String, target: Target?) {
+        val attackers =
+            ships.entries.filter { it.value.player == playerId && it.value.shipClass == shipClass }
+        val shipClassName = shipClassName(shipClass)
+        if (attackers.isEmpty()) {
+            alert("No $shipClassName alive :-(")
+        } else {
+            if (target != null) {
+                viewModelScope.launch {
+                    api.commandsPost(
+                        attackers.associate { it.key to Command("attack", target.id) }
+                    )
+                    alert("All ${shipClassName}s on the way")
+                }
+            }
+        }
+    }
+
+    private fun alert(text: String) {
+        Toast.makeText(app, text, Toast.LENGTH_LONG).show()
+    }
+
+    private fun shipClassName(shipClass: String): String {
+        return when (shipClass) {
+            SHIP_CLASS_FIGHTER -> "fighter"
+            SHIP_CLASS_MOTHERSHIP -> "mother"
+            SHIP_CLASS_BOMBER -> "bomber"
+            else -> "?"
+        }
+    }
+
     companion object {
-        const val SHIP_TYPE_FIGHTER = "4"
-        const val SHIP_TYPE_BOMBER = "5"
-        const val SHIP_TYPE_MOTHERSHIP = "1"
+        const val SHIP_CLASS_FIGHTER = "4"
+        const val SHIP_CLASS_BOMBER = "5"
+        const val SHIP_CLASS_MOTHERSHIP = "1"
     }
 }

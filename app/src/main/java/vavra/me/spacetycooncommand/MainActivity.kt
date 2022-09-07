@@ -27,7 +27,11 @@ class MainActivity : ComponentActivity() {
                         onMotherSelected = { viewModel.motherSelected(it) },
                         onFighterSelected = { viewModel.fighterSelected(it) },
                         onBomberSelected = { viewModel.bomberSelected(it) },
-                        onRefresh = { viewModel.refresh() })
+                        onRefresh = { viewModel.refresh() },
+                        onMotherAttack = { viewModel.motherAttack() },
+                        onFighterAttack = { viewModel.fighterAttack() },
+                        onBomberAttack = { viewModel.bomberAttack() }
+                    )
                 }
             }
         }

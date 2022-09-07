@@ -17,26 +17,32 @@ fun Screen(
     onMotherSelected: (Target) -> Unit,
     onFighterSelected: (Target) -> Unit,
     onBomberSelected: (Target) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onMotherAttack: () -> Unit,
+    onFighterAttack: () -> Unit,
+    onBomberAttack: () -> Unit
 ) {
     Column(Modifier.padding(24.dp)) {
         Picker(
             label = "Attack with mothership to:",
             state.targets,
             state.mothershipSelection,
-            onMotherSelected
+            onMotherSelected,
+            onMotherAttack
         )
         Picker(
             label = "Attack with fighters to:",
             state.targets,
             state.fightersSelection,
-            onFighterSelected
+            onFighterSelected,
+            onFighterAttack
         )
         Picker(
             label = "Attack with bombers to:",
             state.targets,
             state.bombersSelection,
-            onBomberSelected
+            onBomberSelected,
+            onBomberAttack
         )
         Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
             OutlinedButton(onClick = onRefresh) {
@@ -48,7 +54,13 @@ fun Screen(
 }
 
 @Composable
-fun ColumnScope.Picker(label: String, targets: List<Target>, selection: Target?, onSelected: (Target) -> Unit) {
+fun ColumnScope.Picker(
+    label: String,
+    targets: List<Target>,
+    selection: Target?,
+    onSelected: (Target) -> Unit,
+    onAttack: () -> Unit
+) {
     Text(label, color = Color.Gray)
 
     var expanded by remember { mutableStateOf(false) }
@@ -89,7 +101,7 @@ fun ColumnScope.Picker(label: String, targets: List<Target>, selection: Target?,
     }
 
     Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
-        Button(onClick = { }) {
+        Button(onClick = onAttack) {
             Text("Attack!")
         }
     }
@@ -106,6 +118,6 @@ fun ScreenPreview() {
             Target("id", "ducks - mothership"),
             Target("id", "ducks - mothership")
         ),
-        {}, {}, {}, {}
+        {}, {}, {}, {}, {}, {}, {}
     )
 }
