@@ -30,7 +30,8 @@ class MainActivity : ComponentActivity() {
                         onRefresh = { viewModel.refresh() },
                         onMotherAttack = { viewModel.motherAttack() },
                         onFighterAttack = { viewModel.fighterAttack() },
-                        onBomberAttack = { viewModel.bomberAttack() }
+                        onBomberAttack = { viewModel.bomberAttack() },
+                        onDisableRage = { viewModel.disableRage() }
                     )
                 }
             }

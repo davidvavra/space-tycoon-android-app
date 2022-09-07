@@ -20,7 +20,8 @@ fun Screen(
     onRefresh: () -> Unit,
     onMotherAttack: () -> Unit,
     onFighterAttack: () -> Unit,
-    onBomberAttack: () -> Unit
+    onBomberAttack: () -> Unit,
+    onDisableRage: () -> Unit
 ) {
     Column(Modifier.padding(24.dp)) {
         Picker(
@@ -47,6 +48,12 @@ fun Screen(
         Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
             OutlinedButton(onClick = onRefresh) {
                 Text("Refresh")
+            }
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            OutlinedButton(onClick = onDisableRage) {
+                Text("Disable RAGE mode")
             }
         }
     }
@@ -118,6 +125,6 @@ fun ScreenPreview() {
             Target("id", "ducks - mothership"),
             Target("id", "ducks - mothership")
         ),
-        {}, {}, {}, {}, {}, {}, {}
+        {}, {}, {}, {}, {}, {}, {}, {}
     )
 }

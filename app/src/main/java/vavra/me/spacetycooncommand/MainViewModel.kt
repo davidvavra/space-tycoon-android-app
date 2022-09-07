@@ -106,6 +106,21 @@ class MainViewModel(val app: Application) : AndroidViewModel(app) {
         attack(SHIP_CLASS_BOMBER, state.bombersSelection)
     }
 
+    fun disableRage() {
+        val ourShips = ships.entries.filter { it.value.player == playerId }
+        viewModelScope.launch {
+            val response = api.commandsPost(
+                ourShips.associate { it.key to Command("rename", name = "Automated") }
+            )
+            if (response.isSuccessful) {
+                alert("Automation is back on")
+            } else {
+                val error = response.errorBody()
+                alert(error.toString())
+            }
+        }
+    }
+
     private fun attack(shipClass: String, target: Target?) {
         val attackers =
             ships.entries.filter { it.value.player == playerId && it.value.shipClass == shipClass }
@@ -115,8 +130,11 @@ class MainViewModel(val app: Application) : AndroidViewModel(app) {
         } else {
             if (target != null) {
                 viewModelScope.launch {
+                    api.commandsPost(
+                        attackers.associate { it.key to Command("rename", name = "RAGE") }
+                    )
                     val response = api.commandsPost(
-                        attackers.associate { it.key to Command("attack", target.id) }
+                        attackers.associate { it.key to Command("attack", target = target.id) }
                     )
                     if (response.isSuccessful) {
                         alert("All ${shipClassName}s on the way")
