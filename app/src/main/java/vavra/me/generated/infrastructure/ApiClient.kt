@@ -1,16 +1,15 @@
 package vavra.me.generated.infrastructure
 
-import vavra.me.generated.auth.ApiKeyAuth
-
+import com.squareup.moshi.Moshi
 import okhttp3.Call
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import retrofit2.Retrofit
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Converter
-import retrofit2.converter.scalars.ScalarsConverterFactory
-import com.squareup.moshi.Moshi
+import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
+import vavra.me.generated.auth.ApiKeyAuth
 
 
 class ApiClient(
@@ -22,6 +21,7 @@ class ApiClient(
 ) {
     private val apiAuthorizations = mutableMapOf<String, Interceptor>()
     var logger: ((String) -> Unit)? = null
+    var cookie: String? = null
 
     private val retrofitBuilder: Retrofit.Builder by lazy {
         Retrofit.Builder()
@@ -59,7 +59,7 @@ class ApiClient(
     ) : this(baseUrl, okHttpClientBuilder, serializerBuilder) {
         authNames.forEach { authName ->
             val auth = when (authName) {
-                "cookieAuth" -> ApiKeyAuth("cookie", "SESSION_ID")
+                "cookieAuth" -> ApiKeyAuth("cookie", "SESSION_ID", this)
                 else -> throw RuntimeException("auth name $authName not found in available auth names")
             }
             addAuthorization(authName, auth)

@@ -74,7 +74,7 @@ fun ColumnScope.Picker(
             Text(
                 selection?.name ?: "",
                 style = MaterialTheme.typography.body1,
-                color = Color.Black,
+                color = MaterialTheme.colors.onSurface,
                 modifier = Modifier.weight(1f)
             )
             Icon(Icons.Default.ArrowDropDown, null)

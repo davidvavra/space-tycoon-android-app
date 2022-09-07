@@ -25,7 +25,8 @@ class MainViewModel(val app: Application) : AndroidViewModel(app) {
         )
     )
         private set
-    private val api = ApiClient().createService(GameApi::class.java)
+    private val apiClient = ApiClient(authNames = arrayOf("cookieAuth"))
+    private val api = apiClient.createService(GameApi::class.java)
     private var playerId: String? = null
     private var ships: Map<String, Ship> = mapOf()
 
@@ -36,9 +37,9 @@ class MainViewModel(val app: Application) : AndroidViewModel(app) {
 
     fun refresh() {
         viewModelScope.launch {
-            if (playerId == null) {
+           // if (playerId == null) {
                 login()
-            }
+          //  }
             val data = api.dataGet().body()
             if (data?.ships != null) {
                 val players = data.players
@@ -70,9 +71,15 @@ class MainViewModel(val app: Application) : AndroidViewModel(app) {
     }
 
     private suspend fun login() {
-        val response = api.loginPost(Credentials("spaceinvaders", "artemis")).body()
-        playerId = response?.id
-        alert("Welcome player id '${playerId}'")
+        val response = api.loginPost(Credentials("spaceinvaders", "artemis"))
+        if (response.isSuccessful) {
+            playerId = response.body()?.id
+            val cookie = response.headers()["set-cookie"]!!.split("=")[1]
+            apiClient.cookie = cookie
+            alert("Welcome player id '${playerId}'")
+        } else {
+            alert("Login failed")
+        }
     }
 
     fun motherSelected(target: Target) {
@@ -108,10 +115,15 @@ class MainViewModel(val app: Application) : AndroidViewModel(app) {
         } else {
             if (target != null) {
                 viewModelScope.launch {
-                    api.commandsPost(
+                    val response = api.commandsPost(
                         attackers.associate { it.key to Command("attack", target.id) }
                     )
-                    alert("All ${shipClassName}s on the way")
+                    if (response.isSuccessful) {
+                        alert("All ${shipClassName}s on the way")
+                    } else {
+                        val error = response.errorBody()
+                        alert(error.toString())
+                    }
                 }
             }
         }
